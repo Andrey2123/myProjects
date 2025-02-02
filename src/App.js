@@ -5,31 +5,42 @@ import FormSection from './Components for App/Form';
 import DisplaySection from './Components for App/Display';
 import CardSection from './Components for App/Card';
 import { Provider } from 'react-redux';
-import { createStore, applyMiddleware } from '@reduxjs/toolkit';
+import { configureStore, applyMiddleware, createReducer } from '@reduxjs/toolkit';
 import {thunk} from 'redux-thunk';
 
-const initialState = {
-  fetchResult:''
+let initialState = {
+  fetchResult:'',
+  likedJokes:[]
 }
 
-function appReducer(state=initialState, action) {
-  switch(action.type) {
-    case 'toFetch':
+const appReducer = createReducer(initialState,(builder)=>{
+  builder
+    .addCase('toFetch',(state=initialState,action)=>{
       if(action.payload!==undefined) state.fetchResult=action.payload;
       console.log('in App',state.fetchResult);
-      break;
-    default:
+    })
+    .addCase('like',(state,action)=>{
+      state.likedJokes=[ ...state.likedJokes, action.payload ]
       console.log(state);
-      break;
-  }
-}
+      })
+    .addCase('unlike',(state,action)=>{
+      console.log(action.payload);
+    })
+})
 
-const store = createStore(appReducer,applyMiddleware(thunk));
+
+const store = configureStore({
+  reducer: appReducer,
+  middleware: (getDefaultMiddleware) => getDefaultMiddleware({
+    immutableCheck: { warnAfter: 128 },
+    serializableCheck: { warnAfter: 128 },
+  })
+});
 
 export default function App() {
   return(
     <>
-    <Provider context={} store={store}>
+    <Provider store={store}>
       <TypographySection />
       <FormSection />
       <DisplaySection />
